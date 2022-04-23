@@ -1,0 +1,46 @@
+type BuyRecord = record {
+  status : bool;
+  token : text;
+  time : nat64;
+  user : text;
+  price : nat64;
+};
+type Condition = record {
+  canister_id : text;
+  limit : nat;
+  canister_type : nat32;
+};
+type ExchangeRecord = record {
+  status : bool;
+  time : nat64;
+  user : text;
+  amount : nat64;
+};
+type Nft = record { token : text; is_saled : bool };
+type Promotion = record {
+  nft : vec Nft;
+  canister_id : text;
+  end_time : nat64;
+  start_time : nat64;
+  conditions : opt Condition;
+  price : nat64;
+};
+type PromotionItem = record { id : nat32; promotion : Promotion };
+type Result = variant { Ok : record { text; nat64 }; Err : text };
+type Result_1 = variant { Ok : bool; Err : text };
+type Result_2 = variant { Ok : nat64; Err : text };
+type Result_3 = variant { Ok : nat; Err : text };
+service : {
+  add_promotion : (Promotion) -> ();
+  approve : () -> (Result);
+  buy : (nat32, nat64) -> (Result_1);
+  capital_transfer : (principal, nat64) -> (Result_2);
+  exchange : (nat64, nat64) -> (Result_3);
+  get_ndp_record : () -> (vec ExchangeRecord) query;
+  get_owner : () -> (opt principal) query;
+  get_promotion : (nat32) -> (opt Promotion) query;
+  get_promotion_list : () -> (vec PromotionItem) query;
+  get_record : (nat32) -> (opt vec BuyRecord) query;
+  lock : (nat32) -> (Result);
+  update_promotion : (nat32, Promotion) -> ();
+}
