@@ -47,7 +47,7 @@ pub fn get_promotion(id: u32) -> Option<promotion::Promotion> {
     PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_promotion(id))
 }
 
-// add_promotion '(record {nft=vec {record {token="1"; can_buy=true; price=1:nat}}; status=true; conditions=opt record {canister_id="vgqnj-miaaa-aaaal-qaapa-cai"; limit=12:nat; canister_type=1:nat32}; canister_id="xxx"; end_time=1650281514000000000:nat64; start_time=1650195114000000000:nat64})'
+// add_promotion 'add_promotion(record {nft=vec {record {token="w7o4l-hakor-uwiaa-aaaaa-cqac6-aaqca-aaath-a"; is_saled=false}; record {token="mjkop-xikor-uwiaa-aaaaa-cqac6-aaqca-aaalm-q"; is_saled=false}}; canister_id="ah2fs-fqaaa-aaaak-aalya-cai"; end_time=1750772326000000000; start_time=1650772326000000000; conditions=opt record {canister_id="vgqnj-miaaa-aaaal-qaapa-cai"; limit=100000000000; canister_type=1}; price=100000000})'
 #[update(guard = "is_owner")]
 #[candid::candid_method]
 fn add_promotion(arg: promotion::Promotion) -> () {
@@ -225,6 +225,7 @@ pub async fn exchange(amount: u64, block_height: u64) -> Result<u128, String> {
 fn get_ndp_record() -> Vec<ExchangeRecord> {
     PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_exchange_record())
 }
+
 
 #[pre_upgrade]
 fn pre_upgrade() {

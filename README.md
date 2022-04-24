@@ -41,6 +41,16 @@ Once the job completes, your application will be available at `http://localhost:
 cargo doc --open 
 ```
 
+## promotion commands
+```
+// add promotion 
+dfx canister --network ic call promotion add_promotion '(record {nft=vec {record {token="w7o4l-hakor-uwiaa-aaaaa-cqac6-aaqca-aaath-a"; is_saled=false}; record {token="mjkop-xikor-uwiaa-aaaaa-cqac6-aaqca-aaalm-q"; is_saled=false}}; canister_id="ah2fs-fqaaa-aaaak-aalya-cai"; end_time=1750772326000000000; start_time=1650772326000000000; conditions=opt record {canister_id="vgqnj-miaaa-aaaal-qaapa-cai"; limit=100000000000; canister_type=1}; price=100000000})'
+
+// update promotion 
+dfx canister --network ic call promotion add_promotion '(1:nat32, record {nft=vec {record {token="w7o4l-hakor-uwiaa-aaaaa-cqac6-aaqca-aaath-a"; is_saled=false}; record {token="mjkop-xikor-uwiaa-aaaaa-cqac6-aaqca-aaalm-q"; is_saled=false}}; canister_id="ah2fs-fqaaa-aaaak-aalya-cai"; end_time=1750772326000000000; start_time=1650772326000000000; conditions=opt record {canister_id="vgqnj-miaaa-aaaal-qaapa-cai"; limit=100000000000; canister_type=1}; price=100000000})'
+
+```
+
 ## debug mod code
 ~~~
 // #[update]

@@ -7,6 +7,8 @@ use std::vec::Vec;
 
 type PromotionId = u32;
 
+/// canister_type 1: quantity 2: NRI
+/// canister_id vgqnj-miaaa-aaaal-qaapa-cai : NDP
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct Condition {
     pub canister_type: u32,
