@@ -109,8 +109,8 @@ impl PromotionService {
             }
         }
 
-        if self.approve_list.len() < number {
-            let mut approve : Vec<(Principal, u64)>= self.approve_list.get(&id).unwrap().to_vec();
+        let mut approve : Vec<(Principal, u64)>= self.approve_list.get(&id).unwrap().to_vec();
+        if approve.len() < number {
             let mut index = 999999999;
             for (i, item) in approve.iter().enumerate() {
                 if item.0 == user {
@@ -128,12 +128,11 @@ impl PromotionService {
         }
     }
 
-    pub fn get_approve(&self, id: PromotionId) -> Result<u64, String> {
+    pub fn get_approve(&self, id: PromotionId, user: Principal) -> Result<u64, String> {
         if id > self.id {
             return Err("unauthorized".to_owned());
         }
         let approve : Vec<(Principal, u64)>= self.approve_list.get(&id).unwrap().to_vec();
-        let user = ic_cdk::caller();
         for item in approve.iter() {
             if item.0 == user {
                 return Ok(item.1);
@@ -142,12 +141,10 @@ impl PromotionService {
         Err("no approve number".to_owned())
     }
 
-    pub fn get_token(&mut self, id: PromotionId) -> Result<String, String> {
+    pub fn get_token(&mut self, id: PromotionId, user: Principal) -> Result<String, String> {
         let approve : Vec<(Principal, u64)>= self.approve_list.get(&id).unwrap().to_vec();
-        let user = ic_cdk::caller();
         for (i, item) in approve.iter().enumerate() {
             if item.0 == user {
-
                 let mut promotion = self.promotion_list.get(&id).unwrap().clone();
                 promotion.nft[i].is_saled = true;
                 let token = promotion.nft[i].token.clone();

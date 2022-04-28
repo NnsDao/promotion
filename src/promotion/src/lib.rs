@@ -116,12 +116,13 @@ pub async fn lock(id: u32) -> Result<(String ,u64), String> {
 #[update]
 #[candid::candid_method(update)]
 pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
-    let approve_num = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_approve(id))?;
-    let user = AccountIdentifier::new(&ic_cdk::caller(), &ic_ledger_types::DEFAULT_SUBACCOUNT);
+    let user_principal = ic_cdk::caller();
+    let approve_num = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_approve(id, user_principal))?;
+    let user = AccountIdentifier::new(&user_principal, &ic_ledger_types::DEFAULT_SUBACCOUNT);
     let to = AccountIdentifier::new(&ic_cdk::api::id(), &ic_ledger_types::DEFAULT_SUBACCOUNT);
     let price = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_promotion(id)).unwrap().price;
     if price == FREE || ledger::check_transfer(user.to_string(), to.to_string(), block_height, approve_num, price).await? {
-        let token = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().get_token(id))?;
+        let token = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().get_token(id, user_principal))?;
         let arg = ext::TransferRequest{
             to: ext::User::address(user.to_string()),
             token: token.clone(),
