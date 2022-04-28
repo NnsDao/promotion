@@ -62,6 +62,7 @@ pub struct PromotionService {
     pub promotion_list: HashMap<PromotionId, Promotion>,
     pub approve_list: HashMap<PromotionId, Vec<(Principal, u64)>>,
     pub buy_record: HashMap<PromotionId, Vec<BuyRecord>>,
+    // pub excahnge_amount: u128,
     pub exchange_record: Vec<ExchangeRecord>,
     pub exchange_approve_list: HashMap<Principal, u64>,
 }
@@ -96,21 +97,20 @@ impl PromotionService {
         }
     }
 
-    pub fn set_approve(&mut self, id: PromotionId, approve_num: u64) -> Result<bool, String>{
+    pub fn set_approve(&mut self, id: PromotionId, user: Principal, approve_num: u64) -> Result<bool, String>{
         if id > self.id {
             return Err("no record".to_owned());
         }
         let number = self.promotion_list.get(&id).unwrap().nft.len();
         ic_cdk::println!{"{:?},{:?}", number, self.approve_list.len()};
         for record_item in self.buy_record.get(&id).unwrap().to_vec().iter() {
-            if record_item.user == ic_cdk::caller().to_string() {
+            if record_item.user == user.to_string() {
                 return Err("Already purchased".to_owned());
             }
         }
 
         if self.approve_list.len() < number {
             let mut approve : Vec<(Principal, u64)>= self.approve_list.get(&id).unwrap().to_vec();
-            let user = ic_cdk::caller();
             let mut index = 999999999;
             for (i, item) in approve.iter().enumerate() {
                 if item.0 == user {
@@ -168,8 +168,8 @@ impl PromotionService {
         self.buy_record.get(&id).cloned()
     }
 
-    pub fn set_exchange_approve(&mut self, approve: u64) -> () {
-        self.exchange_approve_list.insert(ic_cdk::caller(), approve);
+    pub fn set_exchange_approve(&mut self, user: Principal, approve: u64) {
+        self.exchange_approve_list.insert(user, approve);
     }
 
     pub fn get_exchange_approve(&self) -> u64 {

@@ -85,11 +85,12 @@ pub async fn lock(id: u32) -> Result<(String ,u64), String> {
         if now > promotion_info.end_time {
             return Err("promition is ended".to_owned());
         }
+        let user = ic_cdk::caller();
         let approve_num = tools::subnet_raw_rand().await?;
         match promotion_info.conditions {
             Some(condition) => {
-                if conditions::check_condition(ic_cdk::caller(), condition).await {
-                    match PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_approve(id, approve_num)) {
+                if conditions::check_condition(user, condition).await {
+                    match PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_approve(id, user, approve_num)) {
                         Ok(_) => return Ok((address, approve_num)),
                         Err(err) => return Err(err),
                     }
@@ -98,7 +99,7 @@ pub async fn lock(id: u32) -> Result<(String ,u64), String> {
                 }
             }
             None => {
-                match PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_approve(id, approve_num)) {
+                match PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_approve(id, user, approve_num)) {
                     Ok(_) => return Ok((address, approve_num)),
                     Err(err) => return Err(err),
                 }
@@ -169,8 +170,9 @@ fn get_record(id: u32) -> Option<Vec<BuyRecord>> {
 #[candid::candid_method(update)]
 pub async fn approve() -> Result<(String ,u64), String> {
     let address = AccountIdentifier::new(&ic_cdk::api::id(), &ic_ledger_types::DEFAULT_SUBACCOUNT).to_string();
+    let user = ic_cdk::caller();
     let approve_num = tools::subnet_raw_rand().await?;
-    PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_exchange_approve(approve_num));
+    PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_exchange_approve(user, approve_num));
     Ok((address, approve_num))
 }
 
