@@ -26,7 +26,7 @@ async fn get_balance(caller: Principal) -> ext::BalanceResponse {
         token: get_canister_id(CanisterEnmu::Ndp),
         user: ext::User::address(addr.to_string()),
     };
-    CanisterClient::new(get_canister_id(CanisterEnmu::Ndp))
+    CanisterExtClient::new(get_canister_id(CanisterEnmu::Ndp))
         .balance(arg)
         .await
         .unwrap()

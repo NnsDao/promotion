@@ -17,13 +17,13 @@ pub fn get_canister_id(canister: CanisterEnmu) -> String {
     }
 }
 
-pub struct CanisterClient{
+pub struct CanisterExtClient{
     id: String,
 }
 
-impl CanisterClient {
+impl CanisterExtClient {
     pub fn new(canister_id: String) -> Self {
-        CanisterClient{
+        CanisterExtClient{
             id: canister_id,
         }
     }

@@ -120,8 +120,8 @@ pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
     let approve_num = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_approve(id, user_principal))?;
     let user = AccountIdentifier::new(&user_principal, &ic_ledger_types::DEFAULT_SUBACCOUNT);
     let to = AccountIdentifier::new(&ic_cdk::api::id(), &ic_ledger_types::DEFAULT_SUBACCOUNT);
-    let price = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_promotion(id)).unwrap().price;
-    if price == FREE || ledger::check_transfer(user.to_string(), to.to_string(), block_height, approve_num, price).await? {
+    let promotion_info = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_promotion(id)).unwrap();
+    if promotion_info.price == FREE || ledger::check_transfer(user.to_string(), to.to_string(), block_height, approve_num, promotion_info.price).await? {
         let token = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().get_token(id, user_principal))?;
         let arg = ext::TransferRequest{
             to: ext::User::address(user.to_string()),
@@ -132,13 +132,13 @@ pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
             subaccount: None,
             amount: 1,
         };
-        match CanisterClient::new(get_canister_id(CanisterEnmu::Pod)).transfer(arg).await.unwrap().0 {
+        match CanisterExtClient::new(promotion_info.canister_id).transfer(arg).await.unwrap().0 {
             ext::TransferResponse::ok(_) => {
                 let record = BuyRecord{
                     user: user.to_string(),
-                    status: false,
+                    status: true,
                     token: token.clone(),
-                    price: price,
+                    price: promotion_info.price,
                     time: time(),
                 };
                 PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_buy_recorde(id, record));
@@ -149,7 +149,7 @@ pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
                     user: user.to_string(),
                     status: false,
                     token: token.clone(),
-                    price: price,
+                    price: promotion_info.price,
                     time: time(),
                 };
                 PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_buy_recorde(id, record));
@@ -197,7 +197,7 @@ pub async fn exchange(amount: u64, block_height: u64) -> Result<u128, String> {
             subaccount: None,
             amount:ndp_amount as u128,
         };
-        match CanisterClient::new(get_canister_id(CanisterEnmu::Ndp)).transfer(ndp_arg).await.unwrap().0 {
+        match CanisterExtClient::new(get_canister_id(CanisterEnmu::Ndp)).transfer(ndp_arg).await.unwrap().0 {
             ext::TransferResponse::ok(height) => {
                 let record = ExchangeRecord{
                     user: user.to_string(),
