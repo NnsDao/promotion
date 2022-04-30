@@ -116,6 +116,9 @@ pub async fn lock(id: u32) -> Result<(String ,u64), String> {
 #[update]
 #[candid::candid_method(update)]
 pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
+    if PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().exist_block_height(block_height)) {
+        return Err("block height is exist".to_owned());
+    }
     let user_principal = ic_cdk::caller();
     let approve_num = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_approve(id, user_principal))?;
     let user = AccountIdentifier::new(&user_principal, &ic_ledger_types::DEFAULT_SUBACCOUNT);
@@ -142,6 +145,7 @@ pub async fn buy(id: u32, block_height: u64) -> Result<bool, String> {
                     time: time(),
                 };
                 PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_buy_recorde(id, record));
+                PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().add_used_block_height(block_height));
                 return Ok(true);
             },
             ext::TransferResponse::err(_) => {
@@ -182,6 +186,14 @@ pub async fn approve() -> Result<(String ,u64), String> {
 #[update]
 #[candid::candid_method(update)]
 pub async fn exchange(amount: u64, block_height: u64) -> Result<u128, String> {
+    if PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().exist_block_height(block_height)) {
+        return Err("block height is exist".to_owned());
+    }
+
+    if PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().can_exchange()) {
+        return Err("Exchange limit reached".to_owned());
+    }
+
     let user = AccountIdentifier::new(&ic_cdk::caller(), &ic_ledger_types::DEFAULT_SUBACCOUNT);
     let from = AccountIdentifier::new(&ic_cdk::api::id(), &ic_ledger_types::DEFAULT_SUBACCOUNT);
     let approve_num = PROMOTION_STATE.with(|promotion_service| promotion_service.borrow().get_exchange_approve());
@@ -206,6 +218,8 @@ pub async fn exchange(amount: u64, block_height: u64) -> Result<u128, String> {
                     time: time(),
                 };
                 PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().set_exchange_record(record));
+                PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().add_exchange_amount(ndp_amount as u128));
+                PROMOTION_STATE.with(|promotion_service| promotion_service.borrow_mut().add_used_block_height(block_height));
                 return Ok(height);
             }
             ext::TransferResponse::err(_) => {

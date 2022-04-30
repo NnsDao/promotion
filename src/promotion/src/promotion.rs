@@ -62,9 +62,10 @@ pub struct PromotionService {
     pub promotion_list: HashMap<PromotionId, Promotion>,
     pub approve_list: HashMap<PromotionId, Vec<(Principal, u64)>>,
     pub buy_record: HashMap<PromotionId, Vec<BuyRecord>>,
-    // pub excahnge_amount: u128,
     pub exchange_record: Vec<ExchangeRecord>,
     pub exchange_approve_list: HashMap<Principal, u64>,
+    pub exchange_amount: u128,
+    pub used_block_height: Vec<u64>,
 }
 
 impl PromotionService {
@@ -195,4 +196,23 @@ impl PromotionService {
          }
          Ok(())
     }
+
+    pub fn can_exchange(&self) -> bool {
+        // temp set 2,000,000
+        return self.exchange_amount >= 200000000000000
+    }
+
+    pub fn add_exchange_amount(&mut self, amount: u128) {
+        return self.exchange_amount += amount;
+    }
+
+    pub fn add_used_block_height(&mut self, block_height: u64) {
+        self.used_block_height.push(block_height);
+    }
+
+    pub fn exist_block_height(&self, block_height: u64) -> bool {
+        self.used_block_height.contains(&block_height)
+    }
+
+
 }
